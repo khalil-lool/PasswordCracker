@@ -90,3 +90,81 @@ classDiagram
 - Les flèches en pointillés (`..>`) représentent une **dépendance d'utilisation** : la fabrique crée des objets `HashCracker`, le `main` utilise la fabrique et l'interface, et les deux stratégies utilisent `MD5Util` pour calculer les hachages.
 - Aucune flèche ne relie directement `PasswordCracker` aux classes concrètes (`DictionaryHashCracker`, `BruteForceHashCracker`) : c'est le principe même du patron Simple Factory, qui centralise et isole l'instanciation.
 
+5. Usage du patron Simple Factory
+
+Le patron Simple Factory est implémenté dans la classe HashCrackerFactory. Son rôle est de centraliser la logique de création des objets HashCracker, afin que le reste du programme n'ait jamais besoin d'instancier directement DictionaryHashCracker ou BruteForceHashCracker.
+
+java
+HashCracker cracker = HashCrackerFactory.create("DICO");
+
+Concrètement, la fabrique reçoit une chaîne de caractères représentant la méthode choisie ("BRUTE" ou "DICO"), et retourne l'instance concrète correspondante via un switch :
+
+Si la méthode est "DICO", elle retourne une instance de DictionaryHashCracker.
+Si la méthode est "BRUTE", elle retourne une instance de BruteForceHashCracker.
+Si la méthode est invalide ou vide, elle lève une IllegalArgumentException avec un message explicite, plutôt que de laisser le programme planter silencieusement.
+
+Avantages apportés par la fabrique simple :
+
+Elle découple le code appelant (PasswordCracker) des classes concrètes : le main ne dépend que de l'interface HashCracker et de la fabrique.
+Elle centralise la logique de création à un seul endroit, ce qui facilite la maintenance.
+Elle simplifie l'ajout de nouvelles méthodes de cassage du point de vue de l'appelant, qui n'a jamais à changer sa façon d'obtenir une instance.
+
+Inconvénients de la fabrique simple :
+
+Elle ne respecte pas totalement le principe Open/Closed : chaque fois qu'une nouvelle stratégie est ajoutée (par exemple une attaque par table arc-en-ciel), il faut modifier directement le code de HashCrackerFactory (ajouter un nouveau case dans le switch), ce qui viole le principe selon lequel une classe devrait être fermée à la modification.
+Elle repose sur une chaîne de caractères ("DICO", "BRUTE") comme identifiant de stratégie, ce qui est fragile : une faute de frappe n'est détectée qu'à l'exécution, pas à la compilation.
+
+Ces limites seront corrigées dans le mini-projet suivant, avec un patron de création plus flexible (par exemple Factory Method ou une fabrique paramétrée par réflexion), qui permettra d'ajouter une stratégie sans modifier la fabrique elle-même.
+
+6. Résultats obtenus
+
+L'outil a été testé avec succès sur les deux méthodes de cassage :
+
+Mode dictionnaire — mot trouvé
+
+![alt text](image.png)
+
+Mode dictionnaire — mot non trouvé
+
+
+![alt text](image-1.png)
+Mode force brute — mot trouvé
+
+$ java -cp bin PasswordCracker -m BRUTE -h 0cc175b9c0f1b6a831c399e269772661
+Password found: a
+![alt text](image-2.png)
+Gestion d'erreur — méthode invalide
+
+![alt text](image-3.png)
+Ces résultats confirment que :
+
+Les deux stratégies fonctionnent correctement et retournent les résultats attendus.
+Le programme affiche des statistiques utiles (nombre de tentatives, temps d'exécution).
+Les erreurs de saisie sont gérées proprement, sans plantage du programme.
+
+🎥 Vidéo de démonstration (durée : 4 min 41 s) : https://youtu.be/H8J-hPRIjiI
+
+7. Difficultés rencontrées
+
+Le développement en groupe, avec plusieurs membres codant en parallèle sur des branches séparées, a fait apparaître quelques difficultés typiques d'un travail collaboratif :
+
+Incohérence de nommage entre modules développés séparément : la classe utilitaire MD5Util exposait une méthode nommée hashMD5(String), alors que la stratégie BruteForceHashCracker, développée par un autre membre, appelait MD5Util.hash(String). Cette divergence, invisible tant que les deux fichiers n'étaient pas compilés ensemble, a provoqué une erreur de compilation (cannot find symbol) au moment de l'intégration. Cela a mis en évidence l'importance de figer les signatures des méthodes partagées dès le début du projet, avant que chacun ne code en parallèle sur sa branche.
+Fichier manquant lors de l'intégration : le fichier PasswordCracker.java (point d'entrée du programme) n'avait pas été poussé sur le dépôt malgré un message de commit l'annonçant, ce qui bloquait complètement l'exécution du programme même une fois toutes les stratégies prêtes. Ce problème a été identifié grâce à l'historique Git (git log --all -- "*PasswordCracker.java*"), qui a permis de constater qu'aucun commit ne contenait réellement ce fichier finalisé.
+Synchronisation des Pull Requests : certaines branches (notamment celle de la stratégie force brute) sont restées un moment non fusionnées dans main, ce qui a retardé les tests d'intégration bout-en-bout jusqu'à ce que toutes les Pull Requests soient traitées.
+
+Ces difficultés ont été résolues par une relecture attentive de l'historique Git (git log --oneline --graph --all), une vérification systématique du contenu réel des branches avant fusion, et une harmonisation des signatures de méthodes partagées.
+
+8. Conclusion
+
+Ce mini-projet a permis de mettre en pratique le patron de conception Simple Factory dans un contexte concret de cybersécurité, en développant un outil de cassage de mots de passe basé sur deux stratégies interchangeables. L'architecture mise en place respecte les principes de polymorphisme et d'encapsulation demandés, et centralise correctement la création des objets via la fabrique.
+
+Le patron Simple Factory a montré ses avantages en termes de découplage et de simplicité d'utilisation, mais aussi ses limites concernant le respect du principe Open/Closed — des limites qui seront directement adressées dans le mini-projet suivant.
+
+Sur le plan collaboratif, ce projet a aussi été l'occasion de travailler avec un vrai flux Git/GitHub à plusieurs (branches, Pull Requests, résolution de conflits), et de mesurer l'importance de la communication et de la définition d'interfaces communes dès le début d'un projet en équipe.
+
+Questions de réflexion
+Quels avantages apporte la fabrique simple ? Elle centralise la création des objets, découple le code appelant des classes concrètes, et facilite la maintenance en regroupant la logique d'instanciation à un seul endroit.
+Quels sont ses inconvénients ? Elle viole le principe Open/Closed (il faut modifier la fabrique pour ajouter une stratégie), et repose sur des chaînes de caractères comme identifiants, ce qui est source d'erreurs détectées seulement à l'exécution.
+Que faut-il modifier lorsqu'une nouvelle stratégie est ajoutée ? Il faut créer la nouvelle classe concrète implémentant HashCracker, puis modifier directement le switch de HashCrackerFactory pour y ajouter un nouveau cas.
+La fabrique respecte-t-elle le principe Open/Closed ? Non. Le principe Open/Closed stipule qu'une classe devrait être ouverte à l'extension mais fermée à la modification. Or, ici, chaque nouvelle stratégie nécessite de modifier le code existant de HashCrackerFactory, ce qui viole ce principe. Ce problème sera corrigé dans le mini-projet suivant.
+
