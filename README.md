@@ -90,7 +90,7 @@ classDiagram
 - Les flèches en pointillés (`..>`) représentent une **dépendance d'utilisation** : la fabrique crée des objets `HashCracker`, le `main` utilise la fabrique et l'interface, et les deux stratégies utilisent `MD5Util` pour calculer les hachages.
 - Aucune flèche ne relie directement `PasswordCracker` aux classes concrètes (`DictionaryHashCracker`, `BruteForceHashCracker`) : c'est le principe même du patron Simple Factory, qui centralise et isole l'instanciation.
 
-5. Usage du patron Simple Factory
+## 5. Usage du patron Simple Factory
 
 Le patron Simple Factory est implémenté dans la classe HashCrackerFactory. Son rôle est de centraliser la logique de création des objets HashCracker, afin que le reste du programme n'ait jamais besoin d'instancier directement DictionaryHashCracker ou BruteForceHashCracker.
 
@@ -116,7 +116,7 @@ Elle repose sur une chaîne de caractères ("DICO", "BRUTE") comme identifiant d
 
 Ces limites seront corrigées dans le mini-projet suivant, avec un patron de création plus flexible (par exemple Factory Method ou une fabrique paramétrée par réflexion), qui permettra d'ajouter une stratégie sans modifier la fabrique elle-même.
 
-6. Résultats obtenus
+## 6. Résultats obtenus
 
 L'outil a été testé avec succès sur les deux méthodes de cassage :
 
@@ -144,7 +144,7 @@ Les erreurs de saisie sont gérées proprement, sans plantage du programme.
 
 🎥 Vidéo de démonstration (durée : 4 min 41 s) : https://youtu.be/H8J-hPRIjiI
 
-7. Difficultés rencontrées
+## 7. Difficultés rencontrées
 
 Le développement en groupe, avec plusieurs membres codant en parallèle sur des branches séparées, a fait apparaître quelques difficultés typiques d'un travail collaboratif :
 
@@ -154,7 +154,7 @@ Synchronisation des Pull Requests : certaines branches (notamment celle de la st
 
 Ces difficultés ont été résolues par une relecture attentive de l'historique Git (git log --oneline --graph --all), une vérification systématique du contenu réel des branches avant fusion, et une harmonisation des signatures de méthodes partagées.
 
-8. Conclusion
+## 8. Conclusion
 
 Ce mini-projet a permis de mettre en pratique le patron de conception Simple Factory dans un contexte concret de cybersécurité, en développant un outil de cassage de mots de passe basé sur deux stratégies interchangeables. L'architecture mise en place respecte les principes de polymorphisme et d'encapsulation demandés, et centralise correctement la création des objets via la fabrique.
 
@@ -162,7 +162,8 @@ Le patron Simple Factory a montré ses avantages en termes de découplage et de 
 
 Sur le plan collaboratif, ce projet a aussi été l'occasion de travailler avec un vrai flux Git/GitHub à plusieurs (branches, Pull Requests, résolution de conflits), et de mesurer l'importance de la communication et de la définition d'interfaces communes dès le début d'un projet en équipe.
 
-Questions de réflexion
+## Questions de réflexion
+
 Quels avantages apporte la fabrique simple ? Elle centralise la création des objets, découple le code appelant des classes concrètes, et facilite la maintenance en regroupant la logique d'instanciation à un seul endroit.
 Quels sont ses inconvénients ? Elle viole le principe Open/Closed (il faut modifier la fabrique pour ajouter une stratégie), et repose sur des chaînes de caractères comme identifiants, ce qui est source d'erreurs détectées seulement à l'exécution.
 Que faut-il modifier lorsqu'une nouvelle stratégie est ajoutée ? Il faut créer la nouvelle classe concrète implémentant HashCracker, puis modifier directement le switch de HashCrackerFactory pour y ajouter un nouveau cas.
