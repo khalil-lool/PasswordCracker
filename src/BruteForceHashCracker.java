@@ -1,3 +1,4 @@
+
 public class BruteForceHashCracker implements HashCracker {
 
     private static final String ALPHABET = "abcdefghijklmnopqrstuvwxyz";
@@ -27,7 +28,7 @@ public class BruteForceHashCracker implements HashCracker {
             String candidate = buildCandidate(indices);
             attempts++;
 
-            if (MD5Util.hash(candidate).equals(hash)) {
+            if (MD5Util.hashMD5(candidate).equals(hash)) {
                 return candidate;
             }
 
